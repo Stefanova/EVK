@@ -22,17 +22,25 @@ console.log(list);
 
 // https://developer.mozilla.org/en-US/docs/Web/XPath/Introduction_to_using_XPath_in_JavaScript
 // //*[@id="calendar"]/div/div[2]/div[2]/div[2]
-var listDates = document.evaluate(
-  '//div[class="ec-header"]//div[class="ec-day"]',
-  document,
-  null,
-  XPathResult.ANY_TYPE,
-  null,
-);
-
+var listDates = document.querySelectorAll("div.ec-header div.ec-day");
+var listDates2 = document.querySelectorAll("div.ec-body div.ec-day");
 console.log(
-  listDates
+  listDates, listDates2
 );
+for (var i = 0; i < listDates.length; i++) {
+    var d = listDates[i];
+    var ed = listDates2[i];
+    console.log(i, d.innerText);
+    var listEvents = ed.querySelectorAll('div.ec-event');
+    console.log(listEvents);
+    for (var j = 0; j < listEvents.length; j++){
+        var ev = listEvents[j];
+        var ev_time = ev.querySelector('div.ec-event-time').innerText;
+        var ev_title = ev.querySelector('div.ec-event-title span.link-style').innerText;
+        console.log(ev_time, ev_title);
+
+    }
+}
 return 1;
 
 
