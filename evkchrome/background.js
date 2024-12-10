@@ -36,9 +36,13 @@ for (var i = 0; i < listDates.length; i++) {
     for (var j = 0; j < listEvents.length; j++){
         var ev = listEvents[j];
         var ev_time = ev.querySelector('div.ec-event-time').innerText;
-        var ev_title = ev.querySelector('div.ec-event-title span.link-style').innerText;
+        if (ev.querySelector('div.ec-event-title span.link-style') != null) {
+            var ev_title = ev.querySelector('div.ec-event-title span.link-style').innerText;
+        }
+        else {
+            var ev_title = ev.querySelector('div.ec-event-title').innerText;
+        }
         console.log(ev_time, ev_title);
-
     }
 }
 return 1;
