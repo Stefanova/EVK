@@ -54,7 +54,7 @@ console.log(
 var date1 = document.getElementById("today").value;
 var ev_year = date1.split(".")[2];
 
-var file_text = "";
+var file_text = "Subject;Start date;Start time;End date;End time\r\n";
 
 for (var i = 0; i < listDates.length; i++) {
     var d = listDates[i];
