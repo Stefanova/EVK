@@ -32,7 +32,7 @@ function calendarString(y, d, t, s) {
     var endDate = new Date(y, month, day, endHour, endMin);
     var endDate_s = endDate.toLocaleString("en-US").split(", ");
     //var rez = s+";"+startDate_s[0]+";"+startDate_s[1]+";"+endDate_s[0]+";"+endDate_s[1]+"\r\n";
-    var rez = s+","+startDate_s[0]+","+startDate_s[1]+","+endDate_s[0]+","+endDate_s[1]+"\r\n";
+    var rez = '"'+s.replaceAll('"', '')+'",'+startDate_s[0]+","+startDate_s[1]+","+endDate_s[0]+","+endDate_s[1]+"\r\n";
     return rez;
     //console.log(startDate, endDate, startDate.toLocaleString("en-US"));
     // Subject	Start Date	Start Time	End Date	End Time	All Day Event	Description	Location	Private
@@ -74,13 +74,13 @@ for (var i = 0; i < listDates.length; i++) {
             for (var k = 0; k < ev_list.length; k++) {
                 var ev_1 = ev_list[k];
                 var ev_title = ev_1.querySelector('div.flex-1.link-style').innerText;
-                ev_title = ev_title.replace(";", " ").replace(",", " ");
+                ev_title = ev_title.replaceAll(";", " ").replaceAll(",", " ");
                 console.log(ev_date, ev_time, ev_title);
                 file_text += calendarString(ev_year, ev_date, ev_time, ev_title);
             }
         } else {
             var ev_title = ev.querySelector('div.ec-event-title span.link-style').innerText;
-                ev_title = ev_title.replace(";", " ").replace(",", " ");
+                ev_title = ev_title.replaceAll(";", " ").replaceAll(",", " ");
                 console.log(ev_date, ev_time, ev_title);
                 file_text += calendarString(ev_year, ev_date, ev_time, ev_title);
         }
