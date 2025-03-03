@@ -1,10 +1,8 @@
 var urlRegex = /^https:\/\/app\.eschool\.center/;
 
 chrome.action.onClicked.addListener(async function(tab) {
-  //console of DevTool
   console.log(tab.url);
   if (!urlRegex.test(tab.url)) return;
-  //if (tab.url?.startsWith("chrome://")) return;
 
   var rez = await chrome.scripting.executeScript({
     target: {tabId: tab.id},
@@ -31,21 +29,13 @@ function calendarString(y, d, t, s) {
     var startDate_s = startDate.toLocaleString("en-US").split(", ");
     var endDate = new Date(y, month, day, endHour, endMin);
     var endDate_s = endDate.toLocaleString("en-US").split(", ");
-    //var rez = s+";"+startDate_s[0]+";"+startDate_s[1]+";"+endDate_s[0]+";"+endDate_s[1]+"\r\n";
     var rez = '"'+s.replaceAll('"', '')+'",'+startDate_s[0]+","+startDate_s[1]+","+endDate_s[0]+","+endDate_s[1]+"\r\n";
     return rez;
-    //console.log(startDate, endDate, startDate.toLocaleString("en-US"));
-    // Subject	Start Date	Start Time	End Date	End Time	All Day Event	Description	Location	Private
 }
 
-//console of target TAB
-console.log(333);
-// ec-header
 var list  = document.getElementsByClassName('ec-day');
 console.log(list);
 
-// https://developer.mozilla.org/en-US/docs/Web/XPath/Introduction_to_using_XPath_in_JavaScript
-// //*[@id="calendar"]/div/div[2]/div[2]/div[2]
 var listDates = document.querySelectorAll("div.ec-header div.ec-day");
 var listDates2 = document.querySelectorAll("div.ec-body div.ec-day");
 console.log(
@@ -55,14 +45,12 @@ console.log(
 var date1 = document.getElementById("today").value;
 var ev_year = date1.split(".")[2];
 
-//var file_text = "Subject;Start Date;Start Time;End Date;End Time\r\n";
 var file_text = "Subject,Start Date,Start Time,End Date,End Time\r\n";
 
 for (var i = 0; i < listDates.length; i++) {
     var d = listDates[i];
     var ed = listDates2[i];
     var ev_date = d.innerText;
-    //console.log(i, d.innerText);
     var listEvents = ed.querySelectorAll('div.ec-event');
     console.log(listEvents);
     for (var j = 0; j < listEvents.length; j++){
@@ -86,11 +74,7 @@ for (var i = 0; i < listDates.length; i++) {
         }
     }
 }
-//return 1;
 
-
-//Create ans save file
-//var content = "text;text;text\r\ntext1;text2;text3;";
 
 // Create element with <a href="https://ya.ru">text</a> tag
 const link = document.createElement("a");
@@ -102,7 +86,7 @@ const file = new Blob([file_text], { type: 'text/csv;charset=utf-8;' });
 link.href = URL.createObjectURL(file);
 
 // Add file name
-link.download = "sample.csv";
+link.download = "EVK_"+date1.replaceAll(".", "-")+".csv";
 
 // Add click event to <a> tag to save file.
 link.click();
