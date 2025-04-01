@@ -9,7 +9,12 @@ chrome.action.onClicked.addListener(async function(tab) {
     func: analyseDocument
   });
   console.log(rez);
-    //https://habr.com/ru/articles/668392/
+    // https://habr.com/ru/articles/668392/
+    // https://habr.com/ru/articles/703330/
+    // https://habr.com/ru/articles/524240/
+    // https://developers.google.com/identity/protocols/oauth2/policies#separate-projects
+    // https://habr.com/ru/articles/875464/
+    // https://habr.com/ru/companies/ru_mts/articles/837964/
   //https://stackoverflow.com/questions/55935126/how-can-i-use-the-google-api-in-a-chrome-extension
     /*chrome.identity.getAuthToken({ interactive: true }, function (token) {
       console.log(token);
