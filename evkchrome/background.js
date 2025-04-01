@@ -9,7 +9,7 @@ chrome.action.onClicked.addListener(async function(tab) {
     func: analyseDocument
   });
   console.log(rez);
-
+    //https://habr.com/ru/articles/668392/
   //https://stackoverflow.com/questions/55935126/how-can-i-use-the-google-api-in-a-chrome-extension
     /*chrome.identity.getAuthToken({ interactive: true }, function (token) {
       console.log(token);
