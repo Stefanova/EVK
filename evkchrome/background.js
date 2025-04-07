@@ -9,6 +9,10 @@ chrome.action.onClicked.addListener(async function(tab) {
     func: analyseDocument
   });
   console.log(rez);
+
+  //var goo_usr = "992391029742-0ft6051nv4me57s91nq5stnsfcmb6vjv.apps.googleusercontent.com";
+  //var goo_key = "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";
+
     // https://habr.com/ru/articles/668392/
     // https://habr.com/ru/articles/703330/
     // https://habr.com/ru/articles/524240/
@@ -16,11 +20,11 @@ chrome.action.onClicked.addListener(async function(tab) {
     // https://habr.com/ru/articles/875464/
     // https://habr.com/ru/companies/ru_mts/articles/837964/
   //https://stackoverflow.com/questions/55935126/how-can-i-use-the-google-api-in-a-chrome-extension
-    /*chrome.identity.getAuthToken({ interactive: true }, function (token) {
-      console.log(token);
-
+    chrome.identity.getAuthToken({ interactive: true }, function (token) {
+      console.log(' TOKEN ' + token);
+        return;
       //details about the event
-      et event = {
+      /*et event = {
         summary: 'Google Api Implementation',
         description: 'Create an event using chrome Extension',
         start: {
@@ -49,9 +53,9 @@ chrome.action.onClicked.addListener(async function(tab) {
         .then((response) => response.json()) // Transform the data into json
         .then(function (data) {
           console.log(data);//contains the response of the created event
-        });
+        });*/
 
-    });*/
+    });
 
 });
 

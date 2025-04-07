@@ -3,12 +3,20 @@
   "description": "Экспорт расписания с сайта eschool в календарь",
   "version": "0.2",
   "manifest_version": 3,
-  "permissions": ["activeTab", "scripting"],
+  "permissions": ["activeTab", "scripting", "identity", "identity.email" ],
   "action": {
     "default_icon": "evk_icon.png"
   },
   "background" : {
     "service_worker" : "background.js"
+  },
+  "oauth2": {
+    "client_id": "992391029742-699a3dfeniirlkal5k386hau7tbb8a05.apps.googleusercontent.com",
+    "scopes": [
+      "profile email",
+      "https://www.googleapis.com/auth/calendar",
+      "https://www.googleapis.com/auth/calendar.readonly"
+    ]
   },
   "content_security_policy": {
     "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';"
