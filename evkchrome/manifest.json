@@ -11,7 +11,7 @@
     "service_worker" : "background.js"
   },
   "oauth2": {
-    "client_id": "992391029742-699a3dfeniirlkal5k386hau7tbb8a05.apps.googleusercontent.com",
+    "client_id": "992391029742-j2ssohq1l7omle1i99v0d8o8qrodsbi6.apps.googleusercontent.com",
     "scopes": [
       "profile email",
       "https://www.googleapis.com/auth/calendar",

@@ -1,4 +1,5 @@
 var urlRegex = /^https:\/\/app\.eschool\.center/;
+var lessonsCount = 0;
 
 chrome.action.onClicked.addListener(async function(tab) {
     if (!urlRegex.test(tab.url)) return;
@@ -8,7 +9,10 @@ chrome.action.onClicked.addListener(async function(tab) {
         //files: ["https://apis.google.com/js/api.js"],
         func: analyseDocument
     });
-    //console.log(rez);
+    //console.log(rez, rez[0], rez[0].result);
+    if (!rez || !rez[0] || !rez[0].result || rez[0].result.length == 0) {
+        return;
+    }
 
     /** Info
      https://habr.com/ru/articles/668392/
@@ -19,42 +23,56 @@ chrome.action.onClicked.addListener(async function(tab) {
      https://habr.com/ru/companies/ru_mts/articles/837964/
      https://stackoverflow.com/questions/55935126/how-can-i-use-the-google-api-in-a-chrome-extension
     */
+
+    lessonsCount = 0;
     chrome.identity.getAuthToken({ interactive: true }, function (token) {
         console.log(' TOKEN ' + token);
-        return;
-        //details about the event
-        /*var event = {
-        summary: 'Google Api Implementation',
-        description: 'Create an event using chrome Extension',
-        start: {
-          'dateTime': '2015-05-28T09:00:00-07:00',
-          'timeZone': 'America/Los_Angeles'
-        },
-        end: {
-          'dateTime': '2015-05-28T09:00:00-07:00',
-          'timeZone': 'America/Los_Angeles'
+        for (var i = 0; i < rez[0].result.length; i++) {
+            var evdata = rez[0].result[i];
+            console.log(evdata);
+            var event = {
+                summary: evdata.title,
+                //description: 'Create an event using chrome Extension',
+                start: {
+                  'dateTime': evdata.startDate2, //'2015-05-28T09:00:00-07:00',
+                  'timeZone': 'Europe/Moscow'
+                },
+                end: {
+                  'dateTime': evdata.endDate2,
+                  'timeZone': 'Europe/Moscow'
+                }
+            };
+            var fetch_options = {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(event),
+            };
+            fetch(
+                'https://www.googleapis.com/calendar/v3/calendars/primary/events',
+                fetch_options
+            )
+            .then((response) => response.json()) // Transform the data into json
+            .then(function (data) {
+              console.log(data);//contains the response of the created event
+            });
+            lessonsCount++;
+            if (lessonsCount > 2) break;
         }
-        };
-        var fetch_options = {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(event),
-        };
-
-        fetch(
-        'https://www.googleapis.com/calendar/v3/calendars/primary/events',
-        fetch_options
-        )
-        .then((response) => response.json()) // Transform the data into json
-        .then(function (data) {
-          console.log(data);//contains the response of the created event
-        });
-        */
     });
+
+    await chrome.scripting.executeScript({
+      target: {tabId: tab.id},
+      func: showAlert
+    });
+
 });
+
+function showAlert(){
+    alert("added events: "+lessonsCount);
+}
 
 function analyseDocument() {
 
@@ -90,15 +108,17 @@ function analyseDocument() {
         var t12 = t1[1].split(":");
         var endHour = t12[0];
         var endMin = t12[1];
-        var startDate = new Date(y, month, day, startHour, startMin);
+        var startDate = new Date(y, month - 1, day, startHour, startMin);
         var startDate_s = startDate.toLocaleString("en-US").split(", ");
-        var endDate = new Date(y, month, day, endHour, endMin);
+        var endDate = new Date(y, month - 1, day, endHour, endMin);
         var endDate_s = endDate.toLocaleString("en-US").split(", ");
         var rez = {
         title: s.replaceAll('"', ''),
         startDate: startDate_s[0],
+        startDate2: startDate.toISOString(),
         startTime: startDate_s[1],
         endDate: endDate_s[0],
+        endDate2: endDate.toISOString(),
         endTime: endDate_s[1]
         };
         return rez;
@@ -145,12 +165,13 @@ function analyseDocument() {
     }
 
     //download resulting CSV file
-    const link = document.createElement("a");
+    /*const link = document.createElement("a");
     const file = new Blob([file_text], { type: 'text/csv;charset=utf-8;' });
     link.href = URL.createObjectURL(file);
     link.download = "EVK_"+date1.replaceAll(".", "-")+".csv";
     link.click();
     URL.revokeObjectURL(link.href);
+    */
 
     return result;
 }
