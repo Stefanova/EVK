@@ -22,11 +22,61 @@ chrome.action.onClicked.addListener(async function(tab) {
      https://habr.com/ru/articles/875464/
      https://habr.com/ru/companies/ru_mts/articles/837964/
      https://stackoverflow.com/questions/55935126/how-can-i-use-the-google-api-in-a-chrome-extension
+
+     https://developers.google.com/workspace/calendar/api/v3/reference/events/get?hl=ru
+     https://developers.google.com/workspace/calendar/api/v3/reference/events/list?hl=ru  format
+     https://stackoverflow.com/questions/74440654/how-to-write-events-to-google-calendar-in-chrome-extension
+     https://stackoverflow.com/questions/53239029/get-google-calendar-events-that-start-and-end-between-two-dates filtering by time
+     https://developers.google.com/workspace/calendar/api/v3/reference/events/list#iCalUID timemax timemin
     */
 
     lessonsCount = 0;
     chrome.identity.getAuthToken({ interactive: true }, function (token) {
         console.log(' TOKEN ' + token);
+        /*
+        var fetch_options = {
+                method: 'GET',
+                async: true,
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+                contentType: "json",
+            };
+            async function getCalendarId() {
+                    return new Promise((resolve, reject) => {
+                      fetch(
+                        "https://www.googleapis.com/calendar/v3/calendars/primary",
+                        init
+                      )
+                        .then((response) => response.json()) // Transform the data into json
+                        .then(function (data) {
+                          console.log(data["id"]);
+                          var id = data["id"];
+                          resolve(id);
+                        });
+                    });
+                  }
+                  calendarId = await getCalendarId();
+                  await fetch(
+                    "https://www.googleapis.com/calendar/v3/calendars/" +
+                      calendarId +
+                      "/events",
+                    init
+                  )
+            .then((response) => response.json()) // Transform the data into json
+            .then(async function (data) {
+            /*
+            for (var i = 0; i < data["items"].length; i++) {
+                //console.log(data["items"][i]);
+                if (data["items"][i]["end"] == undefined) {
+                  console.log("found undefined");
+                }
+            }
+            */
+              console.log(data);//contains the response of the created event
+            });
+            */
         for (var i = 0; i < rez[0].result.length; i++) {
             var evdata = rez[0].result[i];
             console.log(evdata);
@@ -50,16 +100,18 @@ chrome.action.onClicked.addListener(async function(tab) {
                 },
                 body: JSON.stringify(event),
             };
-            fetch(
-                'https://www.googleapis.com/calendar/v3/calendars/primary/events',
-                fetch_options
-            )
+            //if !(event == calEvent) {
+                fetch(
+                    'https://www.googleapis.com/calendar/v3/calendars/primary/events',
+                    fetch_options
+                )
+            //}
             .then((response) => response.json()) // Transform the data into json
             .then(function (data) {
               console.log(data);//contains the response of the created event
             });
             lessonsCount++;
-            if (lessonsCount > 2) break;
+            //if (lessonsCount > 2) break;
         }
     });
 
