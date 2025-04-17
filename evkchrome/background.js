@@ -33,86 +33,96 @@ chrome.action.onClicked.addListener(async function(tab) {
     lessonsCount = 0;
     chrome.identity.getAuthToken({ interactive: true }, function (token) {
         console.log(' TOKEN ' + token);
-        /*
-        var fetch_options = {
-                method: 'GET',
-                async: true,
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                },
-                contentType: "json",
-            };
-            async function getCalendarId() {
-                    return new Promise((resolve, reject) => {
-                      fetch(
-                        "https://www.googleapis.com/calendar/v3/calendars/primary",
-                        init
-                      )
-                        .then((response) => response.json()) // Transform the data into json
-                        .then(function (data) {
-                          console.log(data["id"]);
-                          var id = data["id"];
-                          resolve(id);
-                        });
+        ///*
+
+        var optParams = {
+            'maxResults': 1000,
+            'orderBy': 'startTime',
+            //'singleEvents' : TRUE,
+            'timeMin': '2025-04-14T00:00:00+03:00',
+            'timeMax': '2025-04-18T00:00:00+03:00',
+        };
+
+        var init = {
+            method: 'GET',
+            async: true,
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+            contentType: "json",
+            //body: JSON.stringify(optParams)
+        };
+        var calendarId;
+        fetch(
+            "https://www.googleapis.com/calendar/v3/calendars/primary",
+            init
+        )
+        .then((response) => response.json()) // Transform the data into json
+        .then(function (data) {
+            console.log("calendarId "+data["id"],data);
+            calendarId = data["id"];
+            fetch(
+                "https://www.googleapis.com/calendar/v3/calendars/" +
+                calendarId +
+                "/events",
+                init
+            )
+            .then((response) => response.json()) // Transform the data into json
+            .then(function (data1) {
+                console.log('WWW:', data1);
+
+                //
+                for (var i = 0; i < rez[0].result.length; i++) {
+                    var evdata = rez[0].result[i];
+                    console.log(evdata);
+                    if (data1 && data1.items && findEvent(data1.items, evdata)) {
+                        console.log("skip");
+                        continue;
+                    }
+                    var event = {
+                        summary: evdata.title,
+                        //description: 'Create an event using chrome Extension',
+                        start: {
+                          'dateTime': evdata.startDate2, //'2015-05-28T09:00:00-07:00',
+                          'timeZone': 'Europe/Moscow'
+                        },
+                        end: {
+                          'dateTime': evdata.endDate2,
+                          'timeZone': 'Europe/Moscow'
+                        }
+                    };
+                    var fetch_options = {
+                        method: 'POST',
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(event)
+                    };
+                    //if !(event == calEvent) {
+                        fetch(
+                            'https://www.googleapis.com/calendar/v3/calendars/primary/events',
+                            fetch_options
+                        )
+                    //}
+                    .then((response) => response.json()) // Transform the data into json
+                    .then(function (data) {
+                      console.log(data);//contains the response of the created event
                     });
-                  }
-                  calendarId = await getCalendarId();
-                  await fetch(
-                    "https://www.googleapis.com/calendar/v3/calendars/" +
-                      calendarId +
-                      "/events",
-                    init
-                  )
-            .then((response) => response.json()) // Transform the data into json
-            .then(async function (data) {
-            /*
-            for (var i = 0; i < data["items"].length; i++) {
-                //console.log(data["items"][i]);
-                if (data["items"][i]["end"] == undefined) {
-                  console.log("found undefined");
+                    lessonsCount++;
+                    if (lessonsCount > 2) break;
                 }
-            }
-            */
-              console.log(data);//contains the response of the created event
+                //
             });
-            */
-        for (var i = 0; i < rez[0].result.length; i++) {
-            var evdata = rez[0].result[i];
-            console.log(evdata);
-            var event = {
-                summary: evdata.title,
-                //description: 'Create an event using chrome Extension',
-                start: {
-                  'dateTime': evdata.startDate2, //'2015-05-28T09:00:00-07:00',
-                  'timeZone': 'Europe/Moscow'
-                },
-                end: {
-                  'dateTime': evdata.endDate2,
-                  'timeZone': 'Europe/Moscow'
-                }
-            };
-            var fetch_options = {
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(event),
-            };
-            //if !(event == calEvent) {
-                fetch(
-                    'https://www.googleapis.com/calendar/v3/calendars/primary/events',
-                    fetch_options
-                )
-            //}
-            .then((response) => response.json()) // Transform the data into json
-            .then(function (data) {
-              console.log(data);//contains the response of the created event
-            });
-            lessonsCount++;
-            //if (lessonsCount > 2) break;
-        }
+        });
+
+
+
+            //*/
+
+
+
     });
 
     await chrome.scripting.executeScript({
@@ -121,6 +131,21 @@ chrome.action.onClicked.addListener(async function(tab) {
     });
 
 });
+
+function findEvent (calendarList, esEvent) {
+    //console.log(calendarList, esEvent);
+    for (var i = 0; i < calendarList.length; i++) {
+        var cEvent = calendarList[i];
+        if (cEvent.status == "cancelled") continue;
+        console.log("cEvent.start: "+cEvent.start.dateTime+" "+esEvent.startDate2,cEvent.summary, esEvent.title);
+        if (cEvent.start.dateTime == esEvent.startDate2 &&
+            cEvent.end.dateTime == esEvent.endDate2 &&
+            cEvent.summary == esEvent.title) {
+            return true;
+        }
+    }
+    return false;
+}
 
 function showAlert(){
     alert("added events: "+lessonsCount);
