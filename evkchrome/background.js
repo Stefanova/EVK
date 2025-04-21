@@ -31,17 +31,11 @@ chrome.action.onClicked.addListener(async function(tab) {
     */
 
     lessonsCount = 0;
+    var weekStart = rez[0].result[0].startDate3;
+    var weekEnd = rez[0].result[rez[0].result.length - 1].endDate3;
     chrome.identity.getAuthToken({ interactive: true }, function (token) {
         console.log(' TOKEN ' + token);
         ///*
-
-        var optParams = {
-            'maxResults': 1000,
-            'orderBy': 'startTime',
-            //'singleEvents' : TRUE,
-            'timeMin': '2025-04-14T00:00:00+03:00',
-            'timeMax': '2025-04-18T00:00:00+03:00',
-        };
 
         var init = {
             method: 'GET',
@@ -51,7 +45,6 @@ chrome.action.onClicked.addListener(async function(tab) {
                 'Content-Type': 'application/json',
             },
             contentType: "json",
-            //body: JSON.stringify(optParams)
         };
         var calendarId;
         fetch(
@@ -65,17 +58,22 @@ chrome.action.onClicked.addListener(async function(tab) {
             fetch(
                 "https://www.googleapis.com/calendar/v3/calendars/" +
                 calendarId +
-                "/events",
+                "/events?" +
+                new URLSearchParams({
+                    timeMin: weekStart,//'2025-04-14T00:00:00+03:00',
+                    timeMax: weekEnd,//'2025-04-18T00:00:00+03:00',
+                    orderBy: 'updated',
+                    maxResults: 1000,
+                }).toString(),
                 init
             )
             .then((response) => response.json()) // Transform the data into json
             .then(function (data1) {
                 console.log('WWW:', data1);
 
-                //
                 for (var i = 0; i < rez[0].result.length; i++) {
                     var evdata = rez[0].result[i];
-                    console.log(evdata);
+                    console.log(i,evdata);
                     if (data1 && data1.items && findEvent(data1.items, evdata)) {
                         console.log("skip");
                         continue;
@@ -114,22 +112,18 @@ chrome.action.onClicked.addListener(async function(tab) {
                     if (lessonsCount > 2) break;
                 }
                 //
+                console.log('WWW: 999999999');
+                chrome.notifications.create({
+                    type: 'basic',
+                    iconUrl: "evk_icon.png",
+                    title: "Import events into google calendar",
+                    message: lessonsCount+"events transferred"
+                    //buttons: [{ title: 'Keep it Flowing.' }],
+                    //priority: 0
+                });
             });
         });
-
-
-
-            //*/
-
-
-
     });
-
-    await chrome.scripting.executeScript({
-      target: {tabId: tab.id},
-      func: showAlert
-    });
-
 });
 
 function findEvent (calendarList, esEvent) {
@@ -185,17 +179,23 @@ function analyseDocument() {
         var t12 = t1[1].split(":");
         var endHour = t12[0];
         var endMin = t12[1];
-        var startDate = new Date(y, month - 1, day, startHour, startMin);
-        var startDate_s = startDate.toLocaleString("en-US").split(", ");
+        var startDate = new Date(y, month - 1, day, startHour, startMin); //set timezone
+        var startDate_s = startDate.toLocaleString("en-US", {timeZone: 'Europe/Moscow'}).split(", ");
+        var startDateQ = new Date(y, month - 1, day, startHour, startMin);
+        startDateQ.setDate(startDateQ.getDate() - 1);
         var endDate = new Date(y, month - 1, day, endHour, endMin);
-        var endDate_s = endDate.toLocaleString("en-US").split(", ");
+        var endDate_s = endDate.toLocaleString("en-US", {timeZone: 'Europe/Moscow'}).split(", ");
+        var endDateQ = new Date(y, month - 1, day, endHour, endMin);
+        endDateQ.setDate(endDateQ.getDate() + 1);
         var rez = {
         title: s.replaceAll('"', ''),
         startDate: startDate_s[0],
         startDate2: startDate.toISOString(),
+        startDate3: startDateQ.toISOString(),
         startTime: startDate_s[1],
         endDate: endDate_s[0],
         endDate2: endDate.toISOString(),
+        endDate3: endDateQ.toISOString(),
         endTime: endDate_s[1]
         };
         return rez;

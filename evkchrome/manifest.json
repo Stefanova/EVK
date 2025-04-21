@@ -3,7 +3,7 @@
   "description": "Экспорт расписания с сайта eschool в календарь",
   "version": "0.2",
   "manifest_version": 3,
-  "permissions": ["activeTab", "scripting", "identity", "identity.email" ],
+  "permissions": ["activeTab", "scripting", "identity", "identity.email", "notifications" ],
   "action": {
     "default_icon": "evk_icon.png"
   },
