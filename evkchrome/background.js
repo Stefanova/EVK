@@ -1,3 +1,7 @@
+//992391029742-kjfcmfa5hv78m8rpampbfdfqca7m3dfj.apps.googleusercontent.com   239
+//992391029742-j2ssohq1l7omle1i99v0d8o8qrodsbi6.apps.googleusercontent.com   dom
+
+
 var urlRegex = /^https:\/\/app\.eschool\.center/;
 var lessonsCount = 0;
 
@@ -28,7 +32,13 @@ chrome.action.onClicked.addListener(async function(tab) {
      https://stackoverflow.com/questions/74440654/how-to-write-events-to-google-calendar-in-chrome-extension
      https://stackoverflow.com/questions/53239029/get-google-calendar-events-that-start-and-end-between-two-dates filtering by time
      https://developers.google.com/workspace/calendar/api/v3/reference/events/list#iCalUID timemax timemin
+     https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/Date Date constructor
     */
+
+    var testDate = new Date('2025-04-18T00:00:00+03:00');
+    var testD = testDate.toISOString();
+    console.log(testD);
+    // result 2025-04-17T21:00:00.000Z
 
     lessonsCount = 0;
     var weekStart = rez[0].result[0].startDate3;
@@ -60,8 +70,8 @@ chrome.action.onClicked.addListener(async function(tab) {
                 calendarId +
                 "/events?" +
                 new URLSearchParams({
-                    timeMin: weekStart,//'2025-04-14T00:00:00+03:00',
-                    timeMax: weekEnd,//'2025-04-18T00:00:00+03:00',
+                    timeMin: weekStart, //'2025-04-14T00:00:00+03:00',
+                    timeMax: weekEnd, //'2025-04-18T00:00:00+03:00',
                     orderBy: 'updated',
                     maxResults: 1000,
                 }).toString(),
@@ -103,21 +113,22 @@ chrome.action.onClicked.addListener(async function(tab) {
                             'https://www.googleapis.com/calendar/v3/calendars/primary/events',
                             fetch_options
                         )
-                    //}
                     .then((response) => response.json()) // Transform the data into json
                     .then(function (data) {
-                      console.log(data);//contains the response of the created event
+                      console.log(data);  //contains the response of the created event
                     });
                     lessonsCount++;
-                    if (lessonsCount > 2) break;
+                    //if (lessonsCount > 2) break;
                 }
-                //
+
+                var notificationText = " events transferred";
+                if (lessonsCount == 1) notificationText = " event transferred";
                 console.log('WWW: 999999999');
                 chrome.notifications.create({
                     type: 'basic',
                     iconUrl: "evk_icon.png",
                     title: "Import events into google calendar",
-                    message: lessonsCount+"events transferred"
+                    message: lessonsCount+notificationText
                     //buttons: [{ title: 'Keep it Flowing.' }],
                     //priority: 0
                 });
@@ -127,13 +138,16 @@ chrome.action.onClicked.addListener(async function(tab) {
 });
 
 function findEvent (calendarList, esEvent) {
-    //console.log(calendarList, esEvent);
     for (var i = 0; i < calendarList.length; i++) {
         var cEvent = calendarList[i];
         if (cEvent.status == "cancelled") continue;
-        console.log("cEvent.start: "+cEvent.start.dateTime+" "+esEvent.startDate2,cEvent.summary, esEvent.title);
-        if (cEvent.start.dateTime == esEvent.startDate2 &&
-            cEvent.end.dateTime == esEvent.endDate2 &&
+        var cEventStartDate = new Date(cEvent.start.dateTime);
+        var cEventStart = cEventStartDate.toISOString();
+        var cEventEndDate = new Date(cEvent.end.dateTime);
+        var cEventEnd = cEventEndDate.toISOString();
+        console.log("cEvent.start: "+cEventStart+" "+esEvent.startDate2,cEvent.summary, esEvent.title);
+        if (cEventStart == esEvent.startDate2 &&
+            cEventEnd == esEvent.endDate2 &&
             cEvent.summary == esEvent.title) {
             return true;
         }
