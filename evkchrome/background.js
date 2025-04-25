@@ -13,39 +13,14 @@ chrome.action.onClicked.addListener(async function(tab) {
         //files: ["https://apis.google.com/js/api.js"],
         func: analyseDocument
     });
-    //console.log(rez, rez[0], rez[0].result);
     if (!rez || !rez[0] || !rez[0].result || rez[0].result.length == 0) {
         return;
     }
-
-    /** Info
-     https://habr.com/ru/articles/668392/
-     https://habr.com/ru/articles/703330/
-     https://habr.com/ru/articles/524240/
-     https://developers.google.com/identity/protocols/oauth2/policies#separate-projects
-     https://habr.com/ru/articles/875464/
-     https://habr.com/ru/companies/ru_mts/articles/837964/
-     https://stackoverflow.com/questions/55935126/how-can-i-use-the-google-api-in-a-chrome-extension
-
-     https://developers.google.com/workspace/calendar/api/v3/reference/events/get?hl=ru
-     https://developers.google.com/workspace/calendar/api/v3/reference/events/list?hl=ru  format
-     https://stackoverflow.com/questions/74440654/how-to-write-events-to-google-calendar-in-chrome-extension
-     https://stackoverflow.com/questions/53239029/get-google-calendar-events-that-start-and-end-between-two-dates filtering by time
-     https://developers.google.com/workspace/calendar/api/v3/reference/events/list#iCalUID timemax timemin
-     https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/Date Date constructor
-    */
-
-    var testDate = new Date('2025-04-18T00:00:00+03:00');
-    var testD = testDate.toISOString();
-    console.log(testD);
-    // result 2025-04-17T21:00:00.000Z
 
     lessonsCount = 0;
     var weekStart = rez[0].result[0].startDate3;
     var weekEnd = rez[0].result[rez[0].result.length - 1].endDate3;
     chrome.identity.getAuthToken({ interactive: true }, function (token) {
-        console.log(' TOKEN ' + token);
-        ///*
 
         var init = {
             method: 'GET',
@@ -63,15 +38,14 @@ chrome.action.onClicked.addListener(async function(tab) {
         )
         .then((response) => response.json()) // Transform the data into json
         .then(function (data) {
-            console.log("calendarId "+data["id"],data);
             calendarId = data["id"];
             fetch(
                 "https://www.googleapis.com/calendar/v3/calendars/" +
                 calendarId +
                 "/events?" +
                 new URLSearchParams({
-                    timeMin: weekStart, //'2025-04-14T00:00:00+03:00',
-                    timeMax: weekEnd, //'2025-04-18T00:00:00+03:00',
+                    timeMin: weekStart,
+                    timeMax: weekEnd,
                     orderBy: 'updated',
                     maxResults: 1000,
                 }).toString(),
@@ -79,20 +53,16 @@ chrome.action.onClicked.addListener(async function(tab) {
             )
             .then((response) => response.json()) // Transform the data into json
             .then(function (data1) {
-                console.log('WWW:', data1);
 
                 for (var i = 0; i < rez[0].result.length; i++) {
                     var evdata = rez[0].result[i];
-                    console.log(i,evdata);
                     if (data1 && data1.items && findEvent(data1.items, evdata)) {
-                        console.log("skip");
                         continue;
                     }
                     var event = {
                         summary: evdata.title,
-                        //description: 'Create an event using chrome Extension',
                         start: {
-                          'dateTime': evdata.startDate2, //'2015-05-28T09:00:00-07:00',
+                          'dateTime': evdata.startDate2,
                           'timeZone': 'Europe/Moscow'
                         },
                         end: {
@@ -108,30 +78,26 @@ chrome.action.onClicked.addListener(async function(tab) {
                         },
                         body: JSON.stringify(event)
                     };
-                    //if !(event == calEvent) {
                         fetch(
                             'https://www.googleapis.com/calendar/v3/calendars/primary/events',
                             fetch_options
                         )
                     .then((response) => response.json()) // Transform the data into json
                     .then(function (data) {
-                      console.log(data);  //contains the response of the created event
+                      //console.log(data);  //contains the response of the created event
                     });
                     lessonsCount++;
-                    //if (lessonsCount > 2) break;
                 }
 
-                var notificationText = " events transferred";
-                if (lessonsCount == 1) notificationText = " event transferred";
-                console.log('WWW: 999999999');
-                chrome.notifications.create({
+                var notificationText = lessonsCount+" events transferred";
+                if (lessonsCount == 1) notificationText = lessonsCount+" event transferred";
+
+                var notificationPromise = chrome.notifications.create({
                     type: 'basic',
                     iconUrl: "evk_icon.png",
                     title: "Import events into google calendar",
-                    message: lessonsCount+notificationText
-                    //buttons: [{ title: 'Keep it Flowing.' }],
-                    //priority: 0
-                });
+                    message: notificationText
+                })
             });
         });
     });
@@ -145,7 +111,6 @@ function findEvent (calendarList, esEvent) {
         var cEventStart = cEventStartDate.toISOString();
         var cEventEndDate = new Date(cEvent.end.dateTime);
         var cEventEnd = cEventEndDate.toISOString();
-        console.log("cEvent.start: "+cEventStart+" "+esEvent.startDate2,cEvent.summary, esEvent.title);
         if (cEventStart == esEvent.startDate2 &&
             cEventEnd == esEvent.endDate2 &&
             cEvent.summary == esEvent.title) {
