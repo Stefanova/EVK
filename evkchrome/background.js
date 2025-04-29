@@ -2,6 +2,9 @@
 //992391029742-j2ssohq1l7omle1i99v0d8o8qrodsbi6.apps.googleusercontent.com   dom
 
 
+
+//   https://developers.google.com/workspace/calendar/api/v3/reference/events/delete
+
 var urlRegex = /^https:\/\/app\.eschool\.center/;
 var lessonsCount = 0;
 
@@ -61,6 +64,7 @@ chrome.action.onClicked.addListener(async function(tab) {
                     }
                     var event = {
                         summary: evdata.title,
+                        description: "imported from eschool",
                         start: {
                           'dateTime': evdata.startDate2,
                           'timeZone': 'Europe/Moscow'
@@ -107,6 +111,7 @@ function findEvent (calendarList, esEvent) {
     for (var i = 0; i < calendarList.length; i++) {
         var cEvent = calendarList[i];
         if (cEvent.status == "cancelled") continue;
+        if (cEvent.description != "imported from eschool") continue;
         var cEventStartDate = new Date(cEvent.start.dateTime);
         var cEventStart = cEventStartDate.toISOString();
         var cEventEndDate = new Date(cEvent.end.dateTime);
