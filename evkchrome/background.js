@@ -1,6 +1,6 @@
 //992391029742-kjfcmfa5hv78m8rpampbfdfqca7m3dfj.apps.googleusercontent.com   239
 //992391029742-j2ssohq1l7omle1i99v0d8o8qrodsbi6.apps.googleusercontent.com   dom
-
+//7nn5unn74sqslv7kndrlctl1b4
 
 
 //   https://developers.google.com/workspace/calendar/api/v3/reference/events/delete
@@ -57,6 +57,38 @@ chrome.action.onClicked.addListener(async function(tab) {
             .then((response) => response.json()) // Transform the data into json
             .then(function (data1) {
 
+                for (var i = 0; i < data1.items.length; i++) {
+                    var cdata = data1.items[i];
+                    if (!cdata.description || cdata.description != "eschool") continue;
+                    if (rez[0] && rez[0].result && findEventc(rez[0].result, cdata)) {
+                        continue;
+                    }
+                    console.log("calEvent: ", cdata);
+                    var fetch_options = {
+                        method: 'DELETE',
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                            'Content-Type': 'application/json',
+                        },
+                        //body: JSON.stringify(event)
+                    };
+                    fetch(
+                        'https://www.googleapis.com/calendar/v3/calendars/primary/events/' + cdata.id,
+                        fetch_options
+                    ).then((rspp) => {
+                       // Do something with the response
+                       console.log('111',rspp);
+                     }).catch((error) => {
+                       console.log('222',error);
+                     });
+                    /*.then((response) => response.json()) // Transform the data into json
+                    .then(function (data) {
+                      console.log("finish delete", data);  //contains the response of the created event
+                    });*/
+
+                }
+
+                // going through the list of events from eschool (one week)
                 for (var i = 0; i < rez[0].result.length; i++) {
                     var evdata = rez[0].result[i];
                     if (data1 && data1.items && findEvent(data1.items, evdata)) {
@@ -64,7 +96,7 @@ chrome.action.onClicked.addListener(async function(tab) {
                     }
                     var event = {
                         summary: evdata.title,
-                        description: "imported from eschool",
+                        description: "eschool",
                         start: {
                           'dateTime': evdata.startDate2,
                           'timeZone': 'Europe/Moscow'
@@ -82,10 +114,11 @@ chrome.action.onClicked.addListener(async function(tab) {
                         },
                         body: JSON.stringify(event)
                     };
-                        fetch(
-                            'https://www.googleapis.com/calendar/v3/calendars/primary/events',
-                            fetch_options
-                        )
+                    //var r = await
+                    fetch(
+                        'https://www.googleapis.com/calendar/v3/calendars/primary/events',
+                        fetch_options
+                    )
                     .then((response) => response.json()) // Transform the data into json
                     .then(function (data) {
                       //console.log(data);  //contains the response of the created event
@@ -107,18 +140,38 @@ chrome.action.onClicked.addListener(async function(tab) {
     });
 });
 
+function isEventsEqual (esEvent, cEvent) {
+    var cEventStartDate = new Date(cEvent.start.dateTime);
+    var cEventStart = cEventStartDate.toISOString();
+    var cEventEndDate = new Date(cEvent.end.dateTime);
+    var cEventEnd = cEventEndDate.toISOString();
+    if (cEventStart == esEvent.startDate2 &&
+        cEventEnd == esEvent.endDate2 &&
+        cEvent.summary == esEvent.title) {
+        return true;
+    }
+    return false;
+}
+
+
 function findEvent (calendarList, esEvent) {
     for (var i = 0; i < calendarList.length; i++) {
         var cEvent = calendarList[i];
         if (cEvent.status == "cancelled") continue;
-        if (cEvent.description != "imported from eschool") continue;
-        var cEventStartDate = new Date(cEvent.start.dateTime);
-        var cEventStart = cEventStartDate.toISOString();
-        var cEventEndDate = new Date(cEvent.end.dateTime);
-        var cEventEnd = cEventEndDate.toISOString();
-        if (cEventStart == esEvent.startDate2 &&
-            cEventEnd == esEvent.endDate2 &&
-            cEvent.summary == esEvent.title) {
+        //if (cEvent.description != "eschool") continue;
+        if (isEventsEqual (esEvent, cEvent)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function findEventc (eschoolList, cEvent) {
+    for (var i = 0; i < eschoolList.length; i++) {
+        var esEvent = eschoolList[i];
+        if (cEvent.status == "cancelled") continue;
+        //if (cEvent.description != "eschool") continue;
+        if (isEventsEqual (esEvent, cEvent)) {
             return true;
         }
     }
@@ -165,12 +218,12 @@ function analyseDocument() {
         var endMin = t12[1];
         var startDate = new Date(y, month - 1, day, startHour, startMin); //set timezone
         var startDate_s = startDate.toLocaleString("en-US", {timeZone: 'Europe/Moscow'}).split(", ");
-        var startDateQ = new Date(y, month - 1, day, startHour, startMin);
-        startDateQ.setDate(startDateQ.getDate() - 1);
+        var startDateQ = new Date(y, month - 1, day, 0, 0);
+        //startDateQ.setDate(startDateQ.getDate());
         var endDate = new Date(y, month - 1, day, endHour, endMin);
         var endDate_s = endDate.toLocaleString("en-US", {timeZone: 'Europe/Moscow'}).split(", ");
-        var endDateQ = new Date(y, month - 1, day, endHour, endMin);
-        endDateQ.setDate(endDateQ.getDate() + 1);
+        var endDateQ = new Date(y, month - 1, day, 23, 59);
+        //endDateQ.setDate(endDateQ.getDate());
         var rez = {
         title: s.replaceAll('"', ''),
         startDate: startDate_s[0],
